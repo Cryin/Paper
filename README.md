@@ -7,7 +7,12 @@ slideshare被墙了，09年开始使用的百度空间也关停了，很多早�
 ------
 > * Talking About Exploit Writing
 > * Bypassing AntiVirus Detection for Malicious PDFs
-> * ...
+> * MBR病毒分析
+> * 使用bochs调试MBR
+> * 基于MBR的系统登录密码验证程序
+> * PDF文件格式分析
+> * 恶意PDF文件解析思路
+> * Win 7下定位kernel32.dll基址及shellcode编写
 
 Auth: Cryin@insight-labs.org    
 Date: 2016/08/15
