@@ -17,6 +17,7 @@ slideshare被墙了，09年开始使用的百度空间也关停了，到现在�
 > * Firefox vulnerability(CVE-2011-0065 ) Bypassing DEP
 > * CVE-2009-4324漏洞分析
 > * More Insights On The APT
+> * 慢速http拒绝服务攻击及防御方案
 > * ......
 
 Auth: Cryin@insight-labs.org    
