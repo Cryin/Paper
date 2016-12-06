@@ -1,0 +1,498 @@
+# Recognizing C Code Constructs In Assembly
+
+------
+>Auth: Cryin#insight-labs.org
+
+相信在阅读本文之前你已经很了解x86架构及汇编指令，但真正的逆向工程师不会去逐个深究每个具体的指令。因为这个过程太过繁琐如果有成千上百万的指令。作为一个恶意软件分析师，你必须从大量汇编指令中分析并找出一些相对应高级语言结构的代码，比如C语言的一些代码结构包括循环语句、if语句、switch语句等。大部分的恶意程序都是用C语言编写，当然也有C++、Delphi或者其它语言。其中C语言是和汇编语言关联密切的一种简单语言。所以对于刚入门的恶意软件分析师来说，先从分析C 语言的代码结构为开头是个不错的选择。
+
+工具及参考关于反汇编工具这里使用IDA Pro，参考如下：
+
+> [IDA Pro Link](http://www.hex-rays.com/products/ida/support/download_freeware.shtml)
+> [The Unofficial Guide to the World’s Most Popular Disassembler, 2nd Edition](http://item.jd.com/19176300.html)
+
+接下来本文对十多个不同的C代码结构逐一进行介绍：
+###全局变量和局部变量
+全局变量可以被程序中的任何函数使用，局部变量只能在所定义的函数内使用。在C 语言里面两者的定义是基本相同的，但在汇编语言里却大有区别。
+
+C语言代码：
+```c
+    /*全局变量*/
+    int x = 1;
+    int y = 2;
+    void main()
+    {
+        x = x+y;printf("Total = %d\n", x);
+    }
+```
+```c
+    /*局部变量*/
+    void main()
+    {
+        int x = 1;
+        int y = 2;
+        x = x+y;
+        printf("Total = %d\n", x);
+    }
+```
+反汇编代码如下:
+```
+/*全局变量*/
+00401003 mov eax, dword_40CF60
+00401008 add eax, dword_40C000
+0040100E mov dword_40CF60, eax 
+?00401013 mov ecx, dword_40CF60
+00401019 push ecx
+0040101A push offset aTotalD ;"total = %d\n"
+0040101F call printf
+```
+```
+/*局部变量*/
+00401006 mov dword ptr [ebp-4], 0
+0040100D mov dword ptr [ebp-8], 1
+00401014 mov eax, [ebp-4]
+00401017 add eax, [ebp-8]
+0040101A mov [ebp-4], eax
+0040101D mov ecx, [ebp-4]
+00401020 push ecx
+00401021 push offset aTotalD ; "total = %d\n"
+00401026 call printf
+```
+从上面两段反汇编代码中可以看到全局、局部变量最大的区别是全局变量通过内存地址引用，而局部变量通过栈地址引用。算数运算在C语言中有很多不同类型的运算操作符，这一节就来看看这些运算符在汇编代码中的表现形式。
+C语言代码：
+```
+/*算数运算*/
+int a = 0;
+int b = 1;
+a = a + 11;
+a = a - b;
+a--;
+b++;
+b = a % 3;
+```
+反汇编代码如下:
+```
+00401006 mov [ebp+var_4], 0 //a 初始化为0
+0040100D mov [ebp+var_8], 1 //b 初始化为1
+00401014 mov eax, [ebp+var_4] ?
+00401017 add eax, 0Bh //加11 操作
+0040101A mov [ebp+var_4], eax
+0040101D mov ecx, [ebp+var_4]
+00401020 sub ecx, [ebp+var_8] ?//a-b 操作
+00401023 mov [ebp+var_4], ecx
+00401026 mov edx, [ebp+var_4]
+00401029 sub edx, 1 ? //--
+0040102C mov [ebp+var_4], edx
+0040102F mov eax, [ebp+var_8]
+00401032 add eax, 1 ? //++
+00401035 mov [ebp+var_8], eax
+00401038 mov eax, [ebp+var_4]
+0040103B cdq
+0040103C mov ecx, 3
+00401041 idiv ecx //%
+00401043 mov [ebp+var_8], edx ?///edx 保存的余值
+```
+同样在上面代码里可以看到a、b是局部变量，其中这里说明下div、idiv 操作符，最后是将结果保存在eax中，余保存在edx中，所以最后会将edx 的值付给变量b。
+###if语句
+下面是C 语言里面一段简单的if 语句：
+C语言代码：
+```
+/*if 语句*/
+int x = 1;
+int y = 2;
+if(x == y)
+{
+    printf("x equals y.\n");
+}
+else
+{
+    printf("x is not equal to y.\n");
+}
+```
+反汇编代码如下:
+```
+00401006 mov [ebp+var_8], 1
+0040100D mov [ebp+var_4], 2
+00401014 mov eax, [ebp+var_8]
+00401017 cmp eax, [ebp+var_4] ?
+0040101A jnz short loc_40102B ?//此处前面语句cmp 进行比较
+0040101C push offset aXEqualsY_ ; "x equals y.\n"
+00401021 call printf
+00401026 add esp, 4
+00401029 jmp short loc_401038 ?//此处只是单纯的跳转，跳过else 的代码
+0040102B loc_40102B:
+0040102B push offset aXIsNotEqualToY ; "x is not equal to y.\n"
+00401030 call printf
+```
+其中0040101A 处语句jnz short loc_40102B  便是C里面的if语句，但并不是所有的跳转都一定是C 语言里的if 语句。下面是一段嵌套多个的if 语句。
+C语言代码：
+```
+/*嵌套if 语句*/
+int x = 0;
+int y = 1;
+int z = 2;
+if(x == y)
+{
+    if(z==0)
+    {
+        printf("z is zero and x = y.\n");
+    }
+    else
+    {
+        printf("z is non-zero and x = y.\n");
+    }
+}
+else
+{
+    if(z==0)
+    {
+        printf("z zero and x != y.\n");
+    }
+    else
+    {
+        printf("z non-zero and x != y.\n");
+    }
+}
+```
+反汇编代码如下:
+```
+00401006 mov [ebp+var_8], 0
+0040100D mov [ebp+var_4], 1
+00401014 mov [ebp+var_C], 2
+0040101B mov eax, [ebp+var_8]
+0040101E cmp eax, [ebp+var_4]
+00401021 jnz short loc_401047 ? //if
+00401023 cmp [ebp+var_C], 0
+00401027 jnz short loc_401038 ? //if
+00401029 push offset aZIsZeroAndXY_ ; "z is zero and x = y.\n"
+0040102E call printf
+00401033 add esp, 4
+00401036 jmp short loc_401045
+00401038 loc_401038:
+00401038 push offset aZIsNonZeroAndX ; "z is non-zero and x = y.\n"
+0040103D call printf
+00401042 add esp, 4
+00401045 loc_401045:
+00401045 jmp short loc_401069
+00401047 loc_401047:
+00401047 cmp [ebp+var_C], 0
+0040104B jnz short loc_40105C ? //if
+0040104D push offset aZZeroAndXY_ ; "z zero and x != y.\n"
+00401052 call printf
+00401057 add esp, 4
+0040105A jmp short loc_401069
+0040105C loc_40105C:
+0040105C push offset aZNonZeroAndXY_ ; "z non-zero and x != y.\n"
+00401061 call printf
+```
+可以通过IDA 图形分析功能分析代码结构及流程更直观:
+![](http://i1.piimg.com/567571/38b53b81a2d820b2.jpg)
+
+###循环语句
+循环语句在程序编写中非常常见，在反汇编代码中识别出循环语句也十分重要。
+```
+/*for 循环*/
+int i;
+for(i=0; i<100; i++)
+{
+printf("i equals %d\n", i);
+}
+```
+反汇编代码如下
+```
+00401004 mov [ebp+var_4], 0 ? //初始化
+0040100B jmp short loc_401016 ?
+0040100D loc_40100D:
+0040100D mov eax, [ebp+var_4] ?
+00401010 add eax, 1 //累加
+00401013 mov [ebp+var_4], eax ?
+00401016 loc_401016:
+00401016 cmp [ebp+var_4], 64h ?//比较判断
+0040101A jge short loc_40102F ?
+0040101C mov ecx, [ebp+var_4]
+0040101F push ecx
+00401020 push offset aID ; "i equals %d\n"
+00401025 call printf //循环操作
+0040102A add esp, 8
+0040102D jmp short loc_40100D //跳转
+```
+其中识别for 循环的几个明显的特征是00401004 处初始化，00401010 计数器累加，00401016处进行比较，00401025 处执行操作，0040102D 是一个跳转继续执行循环。结合上下代码就可以很容易分析出这是一段for 循环代码。
+也可以通过IDA 图形分析功能查看更直观:
+![](http://i1.piimg.com/567571/a490e729950cb7fe.jpg)
+```
+/*while 循环*/
+int status=0;
+int result = 0;
+while(status == 0)
+{
+    result = performAction();
+    status = checkResult(result);
+}
+```
+对应的反汇编代码如下
+```
+00401036 mov [ebp+var_4], 0
+0040103D mov [ebp+var_8], 0
+00401044 loc_401044:
+00401044 cmp [ebp+var_4], 0
+00401048 jnz short loc_401063 ?
+0040104A call performAction
+0040104F mov [ebp+var_8], eax
+00401052 mov eax, [ebp+var_8]
+00401055 push eax
+00401056 call checkResult
+0040105B add esp, 4
+0040105E mov [ebp+var_4], eax
+00401061 jmp short loc_401044
+```
+和for 循环差不多，00401048处的一个比较语句然后是跳转，而且在00401061 处是一个跳转循环执行while语句。
+###函数调用约定
+函数调用一般先将参数压入栈或者寄存器中，在函数调用结束后这些寄存器、栈空间会被清除。当然不同编译器调用约定各不相同。
+```
+/*函数调用约定*/
+int test(int x, int y, int z);
+int a, b, c, ret;
+ret = test(a, b, c);
+```
+常见的三种函数调用约定，分别是cdecl、stdcall和fastcall。接下来分别来看各种调用的汇编代码
+####cdecl
+cdecl调用是将参数按照从右到左的顺序压入栈中，函数调用结束后函数调用者自身清除栈空间，返回值保存在EAX 寄存器中。
+反汇编代码如下
+```
+push c
+push b
+push a
+call test
+add esp, 12 //clean stack
+mov ret, eax
+
+```
+####stdcall
+stdcall 是Windows API 采用的标准调用。是使用比较广泛的一种调用约定，和cdecl基本相同，只是其通过函数自身平衡堆栈，并不需要调用者清除栈空间。
+####fastcall
+fastcall 一般是将前两个参数通过寄存器来传递，一般是edx、ecx。其余的参数从右到左通过堆栈传递。一般不需要平衡堆栈，需要时函数来完成
+![](http://i1.piimg.com/567571/dc3436697d390cf7.jpg)
+###switch语句
+```
+/*switch 语句*/
+switch(i)
+{
+case 1:printf("i = %d", i+1);
+       break;
+case 2:printf("i = %d", i+2);
+       break;
+case 3:printf("i = %d", i+3);
+       break;
+default:
+       break;
+}
+```
+对应的反汇编代码如下
+```
+00401013 cmp [ebp+var_8], 1 //每一个cmp 就是一个case
+00401017 jz short loc_401027 ?
+00401019 cmp [ebp+var_8], 2
+0040101D jz short loc_40103D
+0040101F cmp [ebp+var_8], 3
+00401023 jz short loc_401053
+00401025 jmp short loc_401067 ?//最后break
+00401027 loc_401027:
+00401027 mov ecx, [ebp+var_4] ?
+0040102A add ecx, 1
+0040102D push ecx
+0040102E push offset unk_40C000 ; i = %d
+00401033 call printf
+00401038 add esp, 8
+0040103B jmp short loc_401067
+0040103D loc_40103D:
+0040103D mov edx, [ebp+var_4] ?
+00401040 add edx, 2
+00401043 push edx
+00401044 push offset unk_40C004 ; i = %d
+00401049 call printf
+0040104E add esp, 8
+00401051 jmp short loc_401067
+00401053 loc_401053:
+00401053 mov eax, [ebp+var_4] ?
+00401056 add eax, 3
+00401059 push eax
+0040105A push offset unk_40C008 ; i = %d
+0040105F call printf
+00401064 add esp, 8
+```
+可以看到代码开始位置连续的cmp指令紧跟着jz指令，其中每一个序列就是一个case。
+###数组
+分别定义两个数组，b 为全局，a 为局部的
+```
+/*数组*/
+int b[5] = {123,87,487,7,978};
+void main()
+{
+    int i;
+    int a[5];
+    for(i = 0; i<5; i++)
+    {
+        a[i] = i;
+        b[i] = i;
+    }
+}
+```
+在反汇编代码中，数组是通过数组的基址来访问的，数组的大小通过其索引可计算
+```
+00401006 mov [ebp+var_18], 0
+0040100D jmp short loc_401018
+0040100F loc_40100F:
+0040100F mov eax, [ebp+var_18]
+00401012 add eax, 1
+00401015 mov [ebp+var_18], eax
+00401018 loc_401018:
+00401018 cmp [ebp+var_18], 5
+0040101C jge short loc_401037
+0040101E mov ecx, [ebp+var_18]
+00401021 mov edx, [ebp+var_18]
+00401024 mov [ebp+ecx*4+var_14], edx ?
+00401028 mov eax, [ebp+var_18]
+0040102B mov ecx, [ebp+var_18]
+0040102E mov dword_40A000[ecx*4], eax ?
+00401035 jmp short loc_40100F
+```
+在上面代码里可以看到通过访问dword_40A000来访问数组b，访问var_14 来访问数组a。ecx 作为索引.
+
+###结构体
+```
+/*结构体*/
+struct my_structure
+{
+    int x[5];
+    char y;
+    double z;
+};
+struct my_structure *gms; 
+void test(struct my_structure *q)
+{
+    int i;
+    q->y = 'a';
+    q->z = 15.6;
+    for(i = 0; i<5; i++)
+    {
+        q->x[i] = i;
+    }
+}
+void main()
+{
+    gms = (struct my_structure *) malloc(sizeof(struct my_structure));
+    test(gms);
+}
+```
+结构体和数组差不多，只是结构体中数据类型不同。反汇编代码如下
+```
+00401050 push ebp
+00401051 mov ebp, esp
+00401053 push 20h
+00401055 call malloc
+0040105A add esp, 4
+0040105D mov dword_40EA30, eax
+00401062 mov eax, dword_40EA30
+00401067 push eax ?
+00401068 call sub_401000
+0040106D add esp, 4
+00401070 xor eax, eax
+00401072 pop ebp
+00401073 retn
+00401000 push ebp //汇编中也是通过基址来访问结构体
+00401001 mov ebp, esp
+00401003 push ecx
+00401004 mov eax,[ebp+arg_0]
+00401007 mov byte ptr [eax+14h], 61h
+0040100B mov ecx, [ebp+arg_0]
+0040100E fld ds:dbl_40B120 ?
+00401014 fstp qword ptr [ecx+18h]
+00401017 mov [ebp+var_4], 0
+0040101E jmp short loc_401029
+00401020 loc_401020:
+00401020 mov edx,[ebp+var_4]
+00401023 add edx, 1
+00401026 mov [ebp+var_4], edx
+00401029 loc_401029:
+00401029 cmp [ebp+var_4], 5
+0040102D jge short loc_40103D
+0040102F mov eax,[ebp+var_4]
+00401032 mov ecx,[ebp+arg_0]
+00401035 mov edx,[ebp+var_4]
+00401038 mov [ecx+eax*4],edx ?
+0040103B jmp short loc_401020
+0040103D loc_40103D:
+0040103D mov esp, ebp
+0040103F pop ebp
+00401040 retn
+```
+其中arg_0 是结构体的基地址，偏移0x14是结构体中的char变量。这里是把61H 赋给了，即是a。其它访问依次类推。
+
+###链表
+```
+/*链表的遍历*/
+struct node{int x;struct node * next;};
+typedef struct node pnode;
+void main()
+{
+    pnode * curr, * head;
+    int i;
+    head = NULL;
+    for(i=1;i<=10;i++)
+    {
+        curr = (pnode *)malloc(sizeof(pnode));
+        curr->x = i;
+        curr->next = head;
+        head = curr;
+    }
+    curr = head;
+    while(curr) 
+    {
+        printf("%d\n", curr->x);
+        curr = curr->next ;
+    }
+}
+```
+反汇编代码如下
+```
+0040106A mov [ebp+var_8], 0
+00401071 mov [ebp+var_C], 1
+00401078 loc_401078:
+00401078 cmp [ebp+var_C], 0Ah
+0040107C jg short loc_4010AB
+0040107E mov [esp+18h+var_18], 8
+00401085 call malloc
+0040108A mov [ebp+var_4], eax
+0040108D mov edx, [ebp+var_4]
+00401090 mov eax, [ebp+var_C]
+00401093 mov [edx], eax ?
+00401095 mov edx, [ebp+var_4]
+00401098 mov eax, [ebp+var_8]
+0040109B mov [edx+4], eax ?
+0040109E mov eax, [ebp+var_4]
+004010A1 mov [ebp+var_8], eax
+004010A4 lea eax, [ebp+var_C]
+004010A7 inc dword ptr [eax]
+004010A9 jmp short loc_401078
+004010AB loc_4010AB:
+004010AB mov eax, [ebp+var_8]
+004010AE mov [ebp+var_4], eax
+004010B1 loc_4010B1:
+004010B1 cmp [ebp+var_4], 0 ?
+004010B5 jz short locret_4010D7
+004010B7 mov eax, [ebp+var_4]
+004010BA mov eax, [eax]
+004010BC mov [esp+18h+var_14], eax
+004010C0 mov [esp+18h+var_18], offset aD ; "%d\n"
+004010C7 call printf
+004010CC mov eax, [ebp+var_4]
+004010CF mov eax, [eax+4]
+004010D2 mov [ebp+var_4], eax ?
+004010D5 jmp short loc_4010B1
+```
+识别汇编中的链表，你必须识别出包含指向其它对象的相同类型的对象。在这个例子中var_4的值由eax赋值，而eax由[eax+4]赋值，[eax+4]又是由前一个var_4的值赋值。所以var_4既是一个指向同样包含一个指针的结构。以此即可识别链表。
+###结束语
+这部分内容是practical malware analysis的读书笔记，主要是呈现给读者如何很快的在汇编语言中去分析出C代码各种常见结构。而不是陷入具体的每一个指令上去。不同的编译器可能会略有所不同，但相信通过实践中的不断分析，这样的思路一定会对逆向分析有非常大的帮助。
+
+
+
+Edit By [MaHua](http://mahua.jser.me)
