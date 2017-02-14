@@ -21,6 +21,7 @@ slideshare被墙了，09年开始使用的百度空间也关停了，到现在�
 > * 由交互式扫描联想到的实时漏洞感知方法
 > * Recognizing C Code Constructs In Assembly
 > * SDL-软件安全设计初窥
+> * AWVS AcuSensor功能分析
 > * ......
 
 Auth: Cryin@insight-labs.org    
