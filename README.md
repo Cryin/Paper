@@ -16,6 +16,8 @@ slideshare被墙了，09年开始使用的百度空间也关停了，到现在�
 > * CVE-2009-0658漏洞分析
 > * Firefox vulnerability(CVE-2011-0065 ) Bypassing DEP
 > * CVE-2009-4324漏洞分析
+> * Flash XSS漏洞挖掘
+> * BurpSuite工具使用经验
 > * More Insights On The APT
 > * 慢速http拒绝服务攻击及防御方案
 > * 由交互式扫描联想到的实时漏洞感知方法
