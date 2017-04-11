@@ -94,7 +94,15 @@ public function init() {
 		......
 ```
 代码通过GET获取'a_k'值，并调用sys_auth函数进行解密，这里传入了'DECODE'参数以及配置文件caches\configs\system.php文件中的auth_key字段。所以可以知道这里是使用了auth_key并进行解密操作。具体可以查看phpcms\libs\functions\global.func.php第384行sys_auth函数的定义。
-在对a_k解密后使用parse_str将字符串解析到变量。最后在第26行处代码处(down.php)将id传入sql查询语句。
+在对a_k解密后使用parse_str将字符串解析到变量，并同时解码。如下代码，输出的id为:'union select
+```php
+<?php 
+$test='id=%27union%20select';
+parse_str($test);
+echo $id;
+?>
+```
+最后在第26行处代码处(down.php)将id传入sql查询语句。
 
 ###漏洞利用
 漏洞点上面已经说了，要利用这个漏洞，首先得对payload进行加密操作，在本地得话auth_key得值是可以知道的，但问题是肯定不通用。仔细想下，程序中有解密的方法，那肯定有相应的加密方法，所以只要在程序中找到调用加密方法并能获取到结果的接口。那便可通用检测所有存在漏洞的站点了，当然这里也要想办法让注入的payload能够不被过滤进入到这个接口，这也可以说是另一个漏洞点了。
