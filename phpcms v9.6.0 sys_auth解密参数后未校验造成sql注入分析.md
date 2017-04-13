@@ -184,6 +184,19 @@ function __construct() {
 	}
 ```
 在这里获取了userid值，从cookie的_userid字段获取或者表单userid_flash的值获取并判断，如果为空则跳转到登录页面，所以这里需要首先访问一个页面获取到这个cookie，然后每次请求带上获取的cookie再进行检测。
+这个页面实现的功能是生成加密cookie，即poc中的/index.php?m=wap&a=index&siteid=1请求页面，在wap模块构造函数中set_cookie实现了加密cookie的生成
+```php
+function __construct() {        
+        $this->db = pc_base::load_model('content_model');
+        $this->siteid = isset($_GET['siteid']) && (intval($_GET['siteid']) > 0) ? intval(trim($_GET['siteid'])) : (param::get_cookie('siteid') ? param::get_cookie('siteid') : 1);
+        param::set_cookie('siteid',$this->siteid);    
+        $this->wap_site = getcache('wap_site','wap');
+        $this->types = getcache('wap_type','wap');
+        $this->wap = $this->wap_site[$this->siteid];
+        define('WAP_SITEURL', $this->wap['domain'] ? $this->wap['domain'].'index.php?' : APP_PATH.'index.php?m=wap&siteid='.$this->siteid);
+        if($this->wap['status']!=1) exit(L('wap_close_status'));
+    }
+```
 既然漏洞原因及利用已经明白了，要实现对改漏洞的检测，首先是获取cookies字段的key的前缀'cookie_pre'及cookie，并对payload进行加密处理。从对应的'cookie_pre'_att_json字段中读取加密后的payload。最后调用漏洞触发点/index.php?m=content&c=down&a_k=payload检测是否注入成功即可。对phpcms官方演示站的测试:
 ![](http://i1.piimg.com/1949/82f0c6b1bcd52c27.png)
 ###漏洞修复
