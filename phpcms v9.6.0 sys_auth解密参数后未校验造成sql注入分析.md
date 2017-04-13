@@ -71,7 +71,7 @@ if __name__ == '__main__':
     phpcms.test()
 
 ```
-###漏洞原因
+### 漏洞原因
 在写标题时，我在想尽量用一言点清这个漏洞的原因。这里写了phpcms v9.6.0 sys_auth在解密参数后未进行适当校验造成sql injection。具体的漏洞触发点在phpcms\modules\content\down.php文件init函数中，代码如下:
 ```php
 public function init() {
@@ -104,7 +104,7 @@ echo $id;
 ```
 最后在第26行处代码处(down.php)将id传入sql查询语句。
 
-###漏洞利用
+### 漏洞利用
 漏洞点上面已经说了，要利用这个漏洞，首先得对payload进行加密操作，在本地得话auth_key得值是可以知道的，但问题是肯定不通用。仔细想下，程序中有解密的方法，那肯定有相应的加密方法，所以只要在程序中找到调用加密方法并能获取到结果的接口。那便可通用检测所有存在漏洞的站点了，当然这里也要想办法让注入的payload能够不被过滤进入到这个接口，这也可以说是另一个漏洞点了。
 基于这个思路，就可以在程序工程中全文搜索sys_auth传入ENCODE的方法，不过通过网上的POC可以看到其作者已经给出了这个ENCODE地方，可以看出漏洞发现者也是非常细心，必须赞下。
 在phpcms\libs\classes\param.class.php文件第86行，函数set_cookie：
@@ -166,7 +166,7 @@ function safe_replace($string) {
 ```sql
 %*27uni*on%20se*lect co*ncat(0x706f6374657374,ver*sion(),0x706f6374657374),2,3,4,5,6,7,8,9,10,11,12#
 ```
-###检测POC实现
+### 检测POC实现
 漏洞原因及利用已经明白了，要实现对改漏洞的检测，首先是获取cookies字段的key的前缀'cookie_pre'及cookie，并对payload进行加密处理。从对应的'cookie_pre'_att_json字段中读取加密后的payload。最后调用漏洞触发点/index.php?m=content&c=down&a_k=payload检测是否注入成功即可。对phpcms官方演示站的测试:
 ![](http://i1.piimg.com/1949/82f0c6b1bcd52c27.png)
 ###漏洞修复
@@ -179,8 +179,10 @@ function safe_replace($string) {
 
 经验有限，文中有不妥之处还请指出~
 
-###参考
+### 参考
+
 [1] https://www.secpulse.com/archives/57486.html
+
 [2] http://v9.demo.phpcms.cn/
 
 
