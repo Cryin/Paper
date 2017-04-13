@@ -167,7 +167,24 @@ function safe_replace($string) {
 %*27uni*on%20se*lect co*ncat(0x706f6374657374,ver*sion(),0x706f6374657374),2,3,4,5,6,7,8,9,10,11,12#
 ```
 ### 检测POC实现
-漏洞原因及利用已经明白了，要实现对改漏洞的检测，首先是获取cookies字段的key的前缀'cookie_pre'及cookie，并对payload进行加密处理。从对应的'cookie_pre'_att_json字段中读取加密后的payload。最后调用漏洞触发点/index.php?m=content&c=down&a_k=payload检测是否注入成功即可。对phpcms官方演示站的测试:
+在测试时还要主意一个点，在attachments类中有一个构造函数,代码如下：
+```php
+function __construct() {
+		pc_base::load_app_func('global');
+		$this->upload_url = pc_base::load_config('system','upload_url');
+		$this->upload_path = pc_base::load_config('system','upload_path');		
+		$this->imgext = array('jpg','gif','png','bmp','jpeg');
+		$this->userid = $_SESSION['userid'] ? $_SESSION['userid'] : (param::get_cookie('_userid') ? param::get_cookie('_userid') : sys_auth($_POST['userid_flash'],'DECODE'));
+		$this->isadmin = $this->admin_username = $_SESSION['roleid'] ? 1 : 0;
+		$this->groupid = param::get_cookie('_groupid') ? param::get_cookie('_groupid') : 8;
+		//?D??ê?·?μ???
+		if(empty($this->userid)){
+			showmessage(L('please_login','','member'));
+		}
+	}
+```
+在这里获取了userid值，从cookie的_userid字段获取或者表单userid_flash的值获取并判断，如果为空则跳转到登录页面，所以这里需要首先访问一个页面获取到这个cookie，然后每次请求带上获取的cookie再进行检测。
+既然漏洞原因及利用已经明白了，要实现对改漏洞的检测，首先是获取cookies字段的key的前缀'cookie_pre'及cookie，并对payload进行加密处理。从对应的'cookie_pre'_att_json字段中读取加密后的payload。最后调用漏洞触发点/index.php?m=content&c=down&a_k=payload检测是否注入成功即可。对phpcms官方演示站的测试:
 ![](http://i1.piimg.com/1949/82f0c6b1bcd52c27.png)
 ###漏洞修复
 这个漏洞利用很巧妙，很佩服漏洞发现者不仅发现漏洞，并给出了完美的利用方法。不知道读者有没有发现这个漏洞另外一个厉害之处。
