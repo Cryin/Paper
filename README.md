@@ -34,6 +34,8 @@ slideshare被墙了，09年开始使用的百度空间也关停了，到现在�
 > * S2-046 漏洞调试及分析
 > * phpcms v9.6.0 wap模块 SQL注入分析
 > * Magento CSRF Lead To Arbitrary File Upload Vulnerability
+> * Spring MVC Autobinding漏洞实例初窥
+> * S2-048 漏洞调试及分析
 > * ......
 
 
