@@ -470,7 +470,6 @@ print "done"
 #### 攻击检测
 通过查看反序列化后的数据，可以看到反序列化数据开头包含两字节的魔术数字，这两个字节始终为十六进制的0xAC ED。接下来是两字节的版本号。我只见到过版本号为5（0x00 05）的数据。考虑到zip、base64各种编码，在攻击检测时可针对该特征进行匹配请求post中是否包含反序列化数据，判断是否为反序列化漏洞攻击。
 
-		xxxdeMacBook-Pro:sofademo xxx$ xxd objectexp 
 		00000000: aced 0005 7372 0032 7375 6e2e 7265 666c  ....sr.2sun.refl
 		00000010: 6563 742e 616e 6e6f 7461 7469 6f6e 2e41  ect.annotation.A
 		00000020: 6e6e 6f74 6174 696f 6e49 6e76 6f63 6174  nnotationInvocat
