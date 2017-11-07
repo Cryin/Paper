@@ -366,6 +366,21 @@ GroovyShell.evaluate
 
 除了短信、邮件轰炸等，还有一种情况也需要注意，程序中可能存在很多接口，用来查询账号是否存在、账号名与手机或邮箱、姓名等的匹配关系，这类请求如不做限制也会被恶意用户批量利用，从而获取用户数据关系相关数据。对这类请求在代码审计时可关注是否有对请求做鉴权、和限制即可大致判断是否存在风险。
 
+##### 漏洞示例
+
+``` java
+    @RequestMapping(value="/ifUserExit",method = RequestMethod.GET)
+    public String ifUserExit(Model model, HttpServletRequest request) throws IOException {
+        String phone = request.getParameter("phone");
+        if(! phone.isEmpty()){
+            boolean ifex=userModel.ifuserExitByPhone(phone);
+            if (!ifex)
+                return "用户不存在";
+        }
+        return "用户已被注册";
+    }
+```
+
 ##### 修复方案
 * 对同一个用户发起这类请求的频率、每小时及每天发送量在服务端做限制，不可在前端实现限制
 
