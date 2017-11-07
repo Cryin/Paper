@@ -344,7 +344,7 @@ GroovyShell.evaluate
 ##### 漏洞示例
 
 ``` java
-	@RequestMapping(value="/getUserInfo",method = RequestMethod.GET)
+    @RequestMapping(value="/getUserInfo",method = RequestMethod.GET)
     public String getUserInfo(Model model, HttpServletRequest request) throws IOException {
         String userid = request.getParameter("userid");
         if(!userid.isEmpty()){
@@ -379,5 +379,6 @@ GroovyShell.evaluate
 ### 待续...
 
 ### 总结
-除了上述相关的漏洞，在代码审计的时候有时会遇到一些特别的漏洞，比如开发为了测试方便关闭掉了一些安全校验函数、甚至未彻底清除的一些预留后门及测试管理接口等。逻辑相关的漏洞则要熟悉应用本身的设计和逻辑。除此，框架本身的安全问题也是可以深挖。一些安全校验、安全解决方案也未必就毫无破绽的。
+
+除了上述相关的漏洞，在代码审计的时候有时会遇到一些特别的漏洞，比如开发为了测试方便关闭掉了一些安全校验函数、甚至未彻底清除的一些预留后门及测试管理接口等。除此，框架本身的安全问题也是可以深挖。一些安全校验、安全解决方案也未必就毫无破绽的，即便存在一些安全解决，但开发人员有没有使用以及是否正确使用安全方案都是可能存在问题的点。大公司都有成熟的框架，一些基本的安全问题并不是太多，但设计层面上的安全及流程相关的问题却基本依赖开发的经验。流程相关的漏洞则有必要先熟悉应用本身的设计和逻辑。这块也是潜在的风险点～
 
