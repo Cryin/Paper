@@ -344,7 +344,7 @@ GroovyShell.evaluate
 ##### 漏洞示例
 
 ``` java
-    @RequestMapping(value="/getUserInfo",method = RequestMethod.GET)
+	@RequestMapping(value="/getUserInfo",method = RequestMethod.GET)
     public String getUserInfo(Model model, HttpServletRequest request) throws IOException {
         String userid = request.getParameter("userid");
         if(!userid.isEmpty()){
@@ -364,8 +364,17 @@ GroovyShell.evaluate
 ##### 介绍
 业务中经常会有使用到发送短信校验码、短信通知、邮件通知等一些功能，这类请求如果不做任何限制，恶意攻击者可能进行批量恶意请求轰炸，大量短信、邮件等通知对正常用户造成困扰，同时也是对公司的资源造成损耗。
 
+除了短信、邮件轰炸等，还有一种情况也需要注意，程序中可能存在很多接口，用来查询账号是否存在、账号名与手机或邮箱、姓名等的匹配关系，这类请求如不做限制也会被恶意用户批量利用，从而获取用户数据关系相关数据。对这类请求在代码审计时可关注是否有对请求做鉴权、和限制即可大致判断是否存在风险。
+
 ##### 修复方案
 * 对同一个用户发起这类请求的频率、每小时及每天发送量在服务端做限制，不可在前端实现限制
+
+### 第三方组件安全
+##### 介绍
+这个比较好理解，诸如Struts2、不安全的编辑控件、XML解析器以及可被其它漏洞利用的如commons-collections:3.1等第三方组件，这个可以在程序pom文件中查看是否有引入依赖。即便在代码中没有应用到或很难直接利用，也不应该使用不安全的版本，一个产品的周期很长，很难保证后面不会引入可被利用的漏洞点。
+
+##### 修复方案
+* 使用最新或安全版本的第三方组件
 
 ### 待续...
 
