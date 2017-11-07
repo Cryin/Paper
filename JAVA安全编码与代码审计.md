@@ -344,7 +344,7 @@ GroovyShell.evaluate
 ##### 漏洞示例
 
 ``` java
-	@RequestMapping(value="/getUserInfo",method = RequestMethod.GET)
+    @RequestMapping(value="/getUserInfo",method = RequestMethod.GET)
     public String getUserInfo(Model model, HttpServletRequest request) throws IOException {
         String userid = request.getParameter("userid");
         if(!userid.isEmpty()){
