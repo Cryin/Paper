@@ -263,7 +263,7 @@ select sink.getMethodAccess(), "Unsafe deserialization of $@.", source, "user in
 ```
 java -jar ysoserial.jar CommonsCollections1 'curl " + URL + " '
 ```
-也可通过DNS解析记录确定漏洞是否存在。
+也可通过DNS解析记录确定漏洞是否存在。现成的轮子很多，推荐NickstaDB写的SerialBrute，还有一个针对RMI的测试工具[BaRMIe](https://github.com/NickstaDB/BaRMIe)，也很不错～。.
 #### RASP检测
 Java程序中类ObjectInputStream的readObject方法被用来将数据流反序列化为对象，如果流中的对象是class，则它的ObjectStreamClass描述符会被读取，并返回相应的class对象，ObjectStreamClass包含了类的名称及serialVersionUID。
 
