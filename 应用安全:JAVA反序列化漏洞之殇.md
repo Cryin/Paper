@@ -24,7 +24,7 @@ ObjectInputStream ois = new ObjectInputStream(in);
 ois.readObject();
 ois.close();
 ```
-这里特别要注意的是非预期的对象，正因为此java标准库及大量第三方公共类库成为反序列化漏洞利用的关键。安全研究人员已经发现大量利用反序列化漏洞执行任意代码的方法，最让大家熟悉的是Gabriel Lawrence和Chris Frohoff在《[Marshalling Pickles how deserializing objects can ruin your day](https://www.slideshare.net/frohoff1/appseccali-2015-marshalling-pickles)》中提出的利用Apache Commons Collection实现任意代码执行。
+这里特别要注意的是非预期的对象，正因为此java标准库及大量第三方公共类库成为反序列化漏洞利用的关键。安全研究人员已经发现大量利用反序列化漏洞执行任意代码的方法，最让大家熟悉的是Gabriel Lawrence和Chris Frohoff在《[Marshalling Pickles how deserializing objects can ruin your day](https://www.slideshare.net/frohoff1/appseccali-2015-marshalling-pickles)》中提出的利用Apache Commons Collection实现任意代码执行。此后安全研究人员也陆续爆出XML、Json、Yaml等反序列化的相关漏洞。
 
 除了commons-collections 3.1可以用来利用java反序列化漏洞，还有更多第三方库同样可以用来利用反序列化漏洞并执行任意代码，部分如下：
 
