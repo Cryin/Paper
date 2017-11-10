@@ -178,6 +178,84 @@ public class SerialObject implements Serializable{
 
 #### 白盒检测
 大型企业的应用很多，每个都人工去审计不现实，往往都有相应的自动化静态代码审计工具，这里以ObjectInputStream.readObject()为例，其它原理也相似。在自动化检测时，可通过实现解析java源代码，检测readObject()方法调用时判断其对象是否为java.io.ObjectOutputStream。如果此时ObjectInputStream对象的初始化参数来自外部请求输入参数则基本可以确定存在反序列化漏洞了。这是只需确认是否存在相应的安全修复即可。
+检测方式可参考[lgtm.com](https://lgtm.com/query/rule:1823453799/lang:java/)对Deserialization of user-controlled data的实现:
+
+```
+/**
+ * @name Deserialization of user-controlled data
+ * @description Deserializing user-controlled data may allow attackers to
+ *              execute arbitrary code.
+ * @kind problem
+ * @problem.severity error
+ * @precision high
+ * @id java/unsafe-deserialization
+ * @tags security
+ *       external/cwe/cwe-502
+ */
+import java
+import semmle.code.java.security.DataFlow
+import semmle.code.java.frameworks.Kryo
+import semmle.code.java.frameworks.XStream
+import semmle.code.java.frameworks.SnakeYaml
+
+class ObjectInputStreamReadObjectMethod extends Method {
+  ObjectInputStreamReadObjectMethod() {
+    this.getDeclaringType().getASourceSupertype*().hasQualifiedName("java.io", "ObjectInputStream") and
+    (this.hasName("readObject") or this.hasName("readUnshared"))
+  }
+}
+
+class XMLDecoderReadObjectMethod extends Method {
+  XMLDecoderReadObjectMethod() {
+    this.getDeclaringType().hasQualifiedName("java.beans", "XMLDecoder") and
+    this.hasName("readObject")
+  }
+}
+
+class SafeXStream extends FlowSource {
+  SafeXStream() {
+    any(XStreamEnableWhiteListing ma).getQualifier().(VarAccess).getVariable().getAnAccess() = this
+  }
+}
+
+class SafeKryo extends FlowSource {
+  SafeKryo() {
+    any(KryoEnableWhiteListing ma).getQualifier().(VarAccess).getVariable().getAnAccess() = this
+  }
+}
+
+predicate unsafeDeserialization(MethodAccess ma, Expr sink) {
+  exists(Method m | m = ma.getMethod() |
+    m instanceof ObjectInputStreamReadObjectMethod and
+    sink = ma.getQualifier()
+    or
+    m instanceof XMLDecoderReadObjectMethod and
+    sink = ma.getQualifier()
+    or
+    m instanceof XStreamReadObjectMethod and
+    sink = ma.getAnArgument() and
+    not exists(SafeXStream sxs | sxs.flowsTo(ma.getQualifier()))
+    or
+    m instanceof KryoReadObjectMethod and
+    sink = ma.getAnArgument() and
+    not exists(SafeKryo sk | sk.flowsTo(ma.getQualifier()))
+    or
+    ma instanceof UnsafeSnakeYamlParse and
+    sink = ma.getArgument(0)
+  )
+}
+
+class UnsafeDeserializationSink extends Expr {
+  UnsafeDeserializationSink() {
+    unsafeDeserialization(_, this)
+  }
+  MethodAccess getMethodAccess() { unsafeDeserialization(result, this) }
+}
+
+from UnsafeDeserializationSink sink, RemoteUserInput source
+where source.flowsTo(sink)
+select sink.getMethodAccess(), "Unsafe deserialization of $@.", source, "user input"
+```
 
 #### 黑盒检测
 调用ysoserial并依次生成各个第三方库的利用payload(也可以先分析依赖第三方包量，调用最多的几个库的paylaod即可)，该payload构造为访问特定url链接的payload，根据http访问请求记录判断反序列化漏洞是否利用成功。如：
