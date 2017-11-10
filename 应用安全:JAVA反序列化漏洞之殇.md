@@ -178,7 +178,7 @@ public class SerialObject implements Serializable{
 
 #### 白盒检测
 大型企业的应用很多，每个都人工去审计不现实，往往都有相应的自动化静态代码审计工具，这里以ObjectInputStream.readObject()为例，其它原理也相似。在自动化检测时，可通过实现解析java源代码，检测readObject()方法调用时判断其对象是否为java.io.ObjectOutputStream。如果此时ObjectInputStream对象的初始化参数来自外部请求输入参数则基本可以确定存在反序列化漏洞了。这是只需确认是否存在相应的安全修复即可。
-检测方式可参考[lgtm.com](https://lgtm.com/query/rule:1823453799/lang:java/)对Deserialization of user-controlled data的实现:
+检测方式可参考[lgtm.com](https://lgtm.com/query/rule:1823453799/lang:java/)对于Deserialization of user-controlled data的实现:
 
 ```
 /**
