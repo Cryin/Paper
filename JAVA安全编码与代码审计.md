@@ -198,6 +198,49 @@ select * from books where id= #{id}
 
 ```
 
+### 文件上传漏洞
+
+##### 介绍
+文件上传过程中，通常因为未校验上传文件后缀类型，导致用户可上传jsp等一些webshell文件。代码审计时可重点关注对上传文件类型是否有足够安全的校验，以及是否限制文件大小等。
+
+##### 漏洞示例
+此处以MultipartFile为例，示例代码片段如下:
+
+``` java
+	public String handleFileUpload(MultipartFile file){
+        String fileName = file.getOriginalFilename();
+        if (fileName==null) {
+            return "file is error";
+        }
+        String filePath = "/static/images/uploads/"+fileName;
+        if (!file.isEmpty()) {
+            try {
+                byte[] bytes = file.getBytes();
+                BufferedOutputStream stream =
+                        new BufferedOutputStream(new FileOutputStream(new File(filePath)));
+                stream.write(bytes);
+                stream.close();
+                return "OK";
+            } catch (Exception e) {
+                return e.getMessage();
+            }
+        } else {
+            return "You failed to upload " + file.getOriginalFilename() + " because the file was empty.";
+        }
+    }
+```
+
+##### 审计函数
+java程序中涉及到文件上传的函数，比如：
+
+```	
+MultipartFile
+...
+```
+##### 修复方案
+
+* 使用白名单校验上传文件类型、大小限制
+
 ### Autobinding
 ##### 介绍
 Autobinding-自动绑定漏洞，根据不同语言/框架，该漏洞有几个不同的叫法，如下：
