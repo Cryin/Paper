@@ -191,7 +191,7 @@ select * from books where id= ${id}
 
 ##### 修复方案
 
-Mybatis框架SQL语句安全写法应使用\#\{\},避免使用动态拼接形式\$\{\}。安全写法如下:
+Mybatis框架SQL语句安全写法应使用\#\{\},避免使用动态拼接形式\$\{\}，ibatis则使用\#变量\#。安全写法如下:
 
 ```
 select * from books where id= #{id}
