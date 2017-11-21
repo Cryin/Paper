@@ -288,7 +288,7 @@ public String resetHandler(@RequestParam String username, Model model) {
 所以当我们给resetQuestionHandler发送GET请求的时候可以添加“answer=hehe”参数，这样就可以给session中的对象赋值，将原本密码找回的安全问题答案修改成“hehe”。这样在最后一步校验安全问题时即可验证成功并找回密码
 
 ##### 审计函数
-对于自动绑定漏洞重点留意几个注解如下：
+这种漏洞一般在比较多步骤的流程中出现，比如转账、找密等场景，也可重点留意几个注解如下：
 
 ```	
 @SessionAttributes
