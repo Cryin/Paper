@@ -42,7 +42,7 @@ xstream.allowTypesByWildcard(new String[] {Blog.class.getPackage().getName()+".*
 可以根据业务需求设置白名单。在设置前一定要清除默认设置，即addPermission(NoTypePermission.NONE)。Xstream内置了很多类型，可以参考[Xstream官方示例](http://x-stream.github.io/security.html#example)
 
 #### 使用黑名单校验方案
-使用Xstream的denyPermission方法可以实现黑名单控制，但不推荐使用该方法，如果业务需求只能使用黑名单的方式，可以联系安全工程师确认。
+使用Xstream的denyPermission方法可以实现黑名单控制，但不推荐使用该方法。
 
 ### 安全建议
 
