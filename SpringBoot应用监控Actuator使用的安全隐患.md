@@ -18,7 +18,7 @@ management.context-path=/monitor
 ``` 
 此时，运行示例,访问/monitor/env即可查看系统环境变量的配置信息，之后再访问/monitor/trace即可查看所有Web请求的详细信息，包括请求方法、路径、时间戳以及请求和响应的头信息甚至cookie信息，如图:
 
-
+![9vCBvQ.jpg](https://s1.ax1x.com/2018/03/29/9vCBvQ.jpg)
 
 Actuator监控分成两类：原生端点和用户自定义扩展端点，原生的主要有：
 
