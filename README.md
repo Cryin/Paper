@@ -45,6 +45,7 @@
 > * 基于Web漏洞扫描的URL及网页框架聚类研究
 > * Xstream反序列化漏洞修复方案
 > * SpringBoot应用监控Actuator使用的安全隐患
+> * GitLab web hooks SSRF(CVE-2018-8801) Patch analysis and How to safely fix SSRF
 > * ......
 
 
