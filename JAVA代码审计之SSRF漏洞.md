@@ -7,7 +7,7 @@ SSRF形成的原因大都是由于代码中提供了从其他服务器应用获�
 * 从指定URL链接获取内容、下载
 * 端口开放检测
 * 数据源连接
-* 读片读取
+* 图片读取
 * 接口调用测试
 * 后台状态刷新
 * 代码库clone等操作
@@ -19,21 +19,21 @@ SSRF形成的原因大都是由于代码中提供了从其他服务器应用获�
 
 * 使用HttpURLConnection发起HTTP请求获取响应信息，代码示例如下：
 ``` java
-	String url = request.getParameter("picurl");
-	StringBuffer response = new StringBuffer();
+String url = request.getParameter("picurl");
+StringBuffer response = new StringBuffer();
 
-  URL pic = new URL(url);
-  HttpURLConnection con = (HttpURLConnection) pic.openConnection();
-	con.setRequestMethod("GET");
-	con.setRequestProperty("User-Agent", "Mozilla/5.0");
-	BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-	String inputLine;
-	while ((inputLine = in.readLine()) != null) {
-	     response.append(inputLine);
-   	}
-	in.close();
-	modelMap.put("resp",response.toString());
-	return "getimg.htm";
+URL pic = new URL(url);
+HttpURLConnection con = (HttpURLConnection) pic.openConnection();
+con.setRequestMethod("GET");
+con.setRequestProperty("User-Agent", "Mozilla/5.0");
+BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+String inputLine;
+while ((inputLine = in.readLine()) != null) {
+	response.append(inputLine);
+  }
+in.close();
+modelMap.put("resp",response.toString());
+return "getimg.htm";
 ```
 * 使用httpClient获取图片二进制流，代码示例如下：
 ``` java
@@ -88,7 +88,7 @@ SSRF形成的原因大都是由于代码中提供了从其他服务器应用获�
 ```
 * mysql等数据源连接，代码示例如下：
 ``` java
-public boolean connection(String url, String username,String passwd) {
+   public boolean connection(String url, String username,String passwd) {
         DataSource mysqlDataSource = getDataSourceByDriver("com.mysql.jdbc.Driver", username, passwd, url);
         Connection conn = null;
         try {
