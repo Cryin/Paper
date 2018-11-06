@@ -48,6 +48,7 @@
 > * GitLab web hooks SSRF(CVE-2018-8801) Patch analysis and How to safely fix SSRF
 > * JAVA代码审计之SSRF漏洞
 > * CVE-2018-1260 spring-security-oauth2 RCE Analysis
+> * Gitlab Projects Import RCE Analysis.md
 > * ......
 
 
