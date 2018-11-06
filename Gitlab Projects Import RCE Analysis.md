@@ -85,8 +85,10 @@ drwxr-xr-x asakawa/asakawa    0 2018-07-11 08:37 uploads/.\nevil/.ssh/
 ```
 
 #### 补丁对比
-可以看到将匹配的正则由%r{.*/\.{1,2}$}修改为了%w(. ..)，详细见修复代码
+可以看到将匹配的正则由%r{.*/\.{1,2}$}修改为了%w(. ..)，详细见修复代码:
+
 [lib/gitlab/import_export/file_importer.rb · v10.8.4 · GitLab.org / GitLab Community Edition · GitLab](https://gitlab.com/gitlab-org/gitlab-ce/blob/v10.8.4/lib/gitlab/import_export/file_importer.rb)
+
 [lib/gitlab/import_export/file_importer.rb · v10.8.6 · GitLab.org / GitLab Community Edition · GitLab](https://gitlab.com/gitlab-org/gitlab-ce/blob/v10.8.6/lib/gitlab/import_export/file_importer.rb)
 #### 参考
 [Vulnerability in project import leads to arbitrary command execution (#49133) · Issues · GitLab.org / GitLab Community Edition · GitLab](https://gitlab.com/gitlab-org/gitlab-ce/issues/49133)
