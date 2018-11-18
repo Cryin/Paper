@@ -50,6 +50,7 @@
 > * CVE-2018-1260 spring-security-oauth2 RCE Analysis
 > * Gitlab Projects Import RCE Analysis
 > * CVE-2018-14667 - JBoss RichFaces EL Injection RCE Analysis
+> * CVE-2018-16621 Nexus Repository Manager3 任意EL表达式注入
 > * ......
 
 
