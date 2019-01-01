@@ -51,6 +51,7 @@
 > * Gitlab Projects Import RCE Analysis
 > * CVE-2018-14667 - JBoss RichFaces EL Injection RCE Analysis
 > * CVE-2018-16621 Nexus Repository Manager3 任意EL表达式注入
+> * SpEL injection（译）
 > * ......
 
 
